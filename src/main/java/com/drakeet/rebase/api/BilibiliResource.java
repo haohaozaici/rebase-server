@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Sorts.ascending;
@@ -55,7 +56,10 @@ import static com.mongodb.client.model.Sorts.ascending;
     @GET @Path("sync")
     @Produces(MediaType.APPLICATION_JSON)
     public Response sync() {
-        OkHttpClient client = new OkHttpClient.Builder().build();
+        OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build();
 
         String url = "http://app.bilibili.com/x/splash?plat=0&width=1080&height=1920";
 
@@ -75,11 +79,10 @@ import static com.mongodb.client.model.Sorts.ascending;
             } else {
                 return returnServerError(response.message());
             }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
             return returnServerError(e.getMessage());
         }
-
         return Response.ok(res).build();
     }
 
