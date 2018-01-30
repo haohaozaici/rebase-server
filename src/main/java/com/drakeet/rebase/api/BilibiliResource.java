@@ -68,12 +68,10 @@ import static com.mongodb.client.model.Sorts.ascending;
             if (response.code() == 200) {
                 res = response.body().string();
                 Log.i(TAG, res);
-
                 SplashPicRes splashPicRes = new Gson().fromJson(res, SplashPicRes.class);
                 for (SplashPicRes.DataBean bean : splashPicRes.getData()) {
                     savePic(bean);
                 }
-
             } else {
                 return returnServerError(response.message());
             }
@@ -92,9 +90,9 @@ import static com.mongodb.client.model.Sorts.ascending;
     }
 
 
-    @GET @Path("{bilibili_id}")
+    @GET @Path("pic")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPic(@PathParam("bilibili_id") String bilibili_id) {
+    public Response getPic(@QueryParam("bilibili_id") String bilibili_id) {
         Document pic = MongoDBs.bilibili_pics().find(eq(BilibiliPic.BILIBILI_ID, bilibili_id))
             .limit(1)
             .first();
@@ -114,7 +112,8 @@ import static com.mongodb.client.model.Sorts.ascending;
     }
 
 
-    @POST @Consumes(MediaType.APPLICATION_JSON)
+    @POST @Path("add")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response addPic(@NotNull @Valid BilibiliPic bilibiliPic) {
         Document pic = MongoDBs.bilibili_pics().find(eq(BilibiliPic.BILIBILI_ID, bilibiliPic.bilibili_id))
             .limit(1)
