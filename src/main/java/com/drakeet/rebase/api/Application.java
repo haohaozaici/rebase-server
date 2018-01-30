@@ -49,6 +49,8 @@ public class Application extends ResourceConfig {
         register(ConstraintViolationExceptionMapper.class);
         register(ValidationConfigurationContextResolver.class);
 
+        register(BilibiliResource.class);
+
         Log.prefix = "------> [Rebase] ~ ";
 
         MongoDBs.setup();

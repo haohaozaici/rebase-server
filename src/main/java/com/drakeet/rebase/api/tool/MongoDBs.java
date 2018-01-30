@@ -20,6 +20,7 @@
 
 package com.drakeet.rebase.api.tool;
 
+import com.drakeet.rebase.api.type.bilibili.BilibiliPic;
 import com.drakeet.rebase.api.type.Category;
 import com.drakeet.rebase.api.type.User;
 import com.mongodb.MongoClient;
@@ -45,6 +46,7 @@ public class MongoDBs {
     private static MongoCollection<Document> categories;
     private static MongoCollection<Document> feeds;
     private static MongoCollection<Document> licenses;
+    private static MongoCollection<Document> bilibili_pics;
 
 
     public static void setup() {
@@ -57,6 +59,7 @@ public class MongoDBs {
 
     private static void initCollections(MongoDatabase db) {
         try {
+            db.createCollection("bilibili_pics");
             db.createCollection("users");
             db.createCollection("categories");
             db.createCollection("feeds");
@@ -68,6 +71,7 @@ public class MongoDBs {
         categories = db.getCollection("categories");
         feeds = db.getCollection("feeds");
         licenses = db.getCollection("licenses");
+        bilibili_pics = db.getCollection("bilibili_pics");
 
         users.createIndex(
             Indexes.ascending(User.USERNAME),
@@ -75,6 +79,10 @@ public class MongoDBs {
 
         categories.createIndex(
             Indexes.ascending(Category.OWNER, Category.KEY),
+            new IndexOptions().unique(true));
+
+        bilibili_pics.createIndex(
+            Indexes.ascending(BilibiliPic.BILIBILI_ID),
             new IndexOptions().unique(true));
     }
 
@@ -101,6 +109,10 @@ public class MongoDBs {
 
     public static MongoCollection<Document> licenses() {
         return licenses;
+    }
+
+    public static MongoCollection<Document> bilibili_pics() {
+        return bilibili_pics;
     }
 
 
