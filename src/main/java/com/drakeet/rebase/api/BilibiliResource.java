@@ -20,18 +20,18 @@
 
 package com.drakeet.rebase.api;
 
-import com.drakeet.rebase.api.tool.*;
+import com.drakeet.rebase.api.tool.Log;
+import com.drakeet.rebase.api.tool.MongoDBs;
+import com.drakeet.rebase.api.tool.RebaseAsserts;
+import com.drakeet.rebase.api.tool.URIs;
 import com.drakeet.rebase.api.tool.util.TimeUtil;
-import com.drakeet.rebase.api.type.bilibili.BilibiliPic;
 import com.drakeet.rebase.api.type.Failure;
+import com.drakeet.rebase.api.type.bilibili.BilibiliPic;
 import com.drakeet.rebase.api.type.bilibili.SplashPicRes;
 import com.google.gson.Gson;
-import com.mongodb.Tag;
-import com.mongodb.client.FindIterable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -39,10 +39,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
-import static com.mongodb.client.model.Projections.exclude;
+import static com.mongodb.client.model.Sorts.ascending;
 
 /**
  * @author haohao
@@ -99,24 +100,44 @@ import static com.mongodb.client.model.Projections.exclude;
             .first();
         RebaseAsserts.notNull(pic, "bilibilipic");
         return Response.ok(pic).build();
-
     }
+
 
     @GET @Path("all")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllPic() {
+        List<Document> picList = new ArrayList<>();
+        MongoDBs.bilibili_pics().find()
+            .sort(ascending(BilibiliPic.BILIBILI_ID))
+            .into(picList);
+        return Response.ok(picList).build();
+    }
 
 
-        FindIterable<Document> pics = MongoDBs.bilibili_pics().find();
-//        RebaseAsserts.notNull(pic, "bilibilipic");
-//        return Response.ok(pic).build();
-        return null;
+    @POST @Consumes(MediaType.APPLICATION_JSON)
+    public Response addPic(@NotNull @Valid BilibiliPic bilibiliPic) {
+        Document pic = MongoDBs.bilibili_pics().find(eq(BilibiliPic.BILIBILI_ID, bilibiliPic.bilibili_id))
+            .limit(1)
+            .first();
 
+        if (pic == null) {
+            Document document = new Document(BilibiliPic.BILIBILI_ID, bilibiliPic.bilibili_id)
+                .append(BilibiliPic.START_TIME, bilibiliPic.start_time)
+                .append(BilibiliPic.END_TIME, bilibiliPic.end_time)
+                .append(BilibiliPic.IMAGE, bilibiliPic.image);
+            MongoDBs.bilibili_pics().insertOne(document);
+            return Response.created(URIs.create("bilibilipic", bilibiliPic.bilibili_id + ""))
+                .entity(document)
+                .build();
+        }
+
+        return Response.status(Response.Status.BAD_REQUEST)
+            .entity(new Failure("pic already exist"))
+            .build();
     }
 
 
     private void savePic(@NotNull SplashPicRes.DataBean bilibiliPic) {
-
         Document pic = MongoDBs.bilibili_pics().find(eq(BilibiliPic.BILIBILI_ID, bilibiliPic.getId()))
             .limit(1)
             .first();
@@ -128,7 +149,6 @@ import static com.mongodb.client.model.Projections.exclude;
                 .append(BilibiliPic.IMAGE, bilibiliPic.getImage());
             MongoDBs.bilibili_pics().insertOne(document);
         }
-
     }
 
 }

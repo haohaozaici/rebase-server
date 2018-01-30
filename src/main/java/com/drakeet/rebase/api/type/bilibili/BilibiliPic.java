@@ -20,7 +20,6 @@
 
 package com.drakeet.rebase.api.type.bilibili;
 
-import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -37,8 +36,8 @@ public class BilibiliPic {
     public static final String END_TIME = "end_time";
     public static final String IMAGE = "image";
 
-    @NotNull @Length(min = 1)
-    public int bilibili_id;
+    @NotNull @Length(min = 1, max = 12)
+    public String  bilibili_id;
 
     @NotNull @Length(min = 1, max = 32)
     public String start_time;
