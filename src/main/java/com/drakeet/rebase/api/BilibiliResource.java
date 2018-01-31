@@ -29,6 +29,7 @@ import com.drakeet.rebase.api.type.Failure;
 import com.drakeet.rebase.api.type.bilibili.BilibiliPic;
 import com.drakeet.rebase.api.type.bilibili.SplashPicRes;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.bson.Document;
@@ -73,8 +74,10 @@ import static com.mongodb.client.model.Sorts.ascending;
                 res = response.body().string();
                 Log.i(TAG, res);
                 SplashPicRes splashPicRes = new Gson().fromJson(res, SplashPicRes.class);
-                for (SplashPicRes.DataBean bean : splashPicRes.getData()) {
-                    savePic(bean);
+                if (!splashPicRes.getData().isEmpty()) {
+                    for (SplashPicRes.DataBean bean : splashPicRes.getData()) {
+                        savePic(bean);
+                    }
                 }
             } else {
                 return returnServerError(response.message());
@@ -100,7 +103,9 @@ import static com.mongodb.client.model.Sorts.ascending;
             .limit(1)
             .first();
         RebaseAsserts.notNull(pic, "bilibilipic");
-        return Response.ok(pic).build();
+        Document result = new Document(pic);
+        result.remove(BilibiliPic._ID);
+        return Response.ok(result).build();
     }
 
 
@@ -111,6 +116,9 @@ import static com.mongodb.client.model.Sorts.ascending;
         MongoDBs.bilibili_pics().find()
             .sort(ascending(BilibiliPic.BILIBILI_ID))
             .into(picList);
+        for (Document document : picList) {
+            document.remove(BilibiliPic._ID);
+        }
         return Response.ok(picList).build();
     }
 
