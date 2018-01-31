@@ -41,7 +41,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -68,12 +70,12 @@ import static com.mongodb.client.model.Sorts.ascending;
             .url(url)
             .build();
 
-        String res;
+        SplashPicRes splashPicRes;
         try (okhttp3.Response response = client.newCall(request).execute()) {
             if (response.code() == 200) {
-                res = response.body().string();
+                String res = response.body().string();
                 Log.i(TAG, res);
-                SplashPicRes splashPicRes = new Gson().fromJson(res, SplashPicRes.class);
+                splashPicRes = new Gson().fromJson(res, SplashPicRes.class);
                 if (!splashPicRes.getData().isEmpty()) {
                     for (SplashPicRes.DataBean bean : splashPicRes.getData()) {
                         savePic(bean);
@@ -86,7 +88,12 @@ import static com.mongodb.client.model.Sorts.ascending;
             e.printStackTrace();
             return returnServerError(e.getMessage());
         }
-        return Response.ok(res).build();
+
+        long pic_count = MongoDBs.bilibili_pics().count();
+        Map<String, Object> res_map = new HashMap<>();
+        res_map.put("all_count", pic_count);
+        res_map.put("response", splashPicRes);
+        return Response.ok(res_map).build();
     }
 
     private Response returnServerError(String message) {
