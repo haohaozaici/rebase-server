@@ -42,17 +42,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <url>http://localhost:8080/manager/text</url><!-- 注意tomcat7此处的url，不能随意修改 -->
-                    <server>tomcat8</server> <!-- 此处的名字必须和setting.xml中配置的ID一致，不能随意修改-->
-                    <path>/rebase-server</path> <!-- 此处的名字是项目发布的工程名-->
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 

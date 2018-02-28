@@ -37,7 +37,7 @@ public class BilibiliPic {
     public static final String IMAGE = "image";
 
     @NotNull @Length(min = 1, max = 12)
-    public String  bilibili_id;
+    public Integer  bilibili_id;
 
     @NotNull @Length(min = 1, max = 32)
     public String start_time;
